@@ -1,0 +1,139 @@
+<Window x:Class="Calculator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Калькулятор" Width="340" Height="560"
+        MinWidth="300" MinHeight="480"
+        WindowStartupLocation="CenterScreen"
+        Background="#FFF3F3F3"
+        FontFamily="Segoe UI"
+        Focusable="True"
+        Loaded="Window_Loaded"
+        PreviewKeyDown="Window_PreviewKeyDown"
+        PreviewTextInput="Window_PreviewTextInput">
+
+    <Window.Resources>
+        <Style x:Key="CalcButton" TargetType="Button">
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Background" Value="#FFF9F9F9"/>
+            <Setter Property="Foreground" Value="#FF1A1A1A"/>
+            <Setter Property="BorderBrush" Value="#FFE5E5E5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid x:Name="root">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="1" CornerRadius="4"/>
+                            <Border x:Name="overlay" Background="Black" Opacity="0" CornerRadius="4"/>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="overlay" Property="Opacity" Value="0.05"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="overlay" Property="Opacity" Value="0.12"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="root" Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DigitButton" TargetType="Button" BasedOn="{StaticResource CalcButton}">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style x:Key="OpButton" TargetType="Button" BasedOn="{StaticResource CalcButton}"/>
+
+        <Style x:Key="EqualsButton" TargetType="Button" BasedOn="{StaticResource CalcButton}">
+            <Setter Property="Background" Value="#FF005FB8"/>
+            <Setter Property="BorderBrush" Value="#FF005FB8"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="22"/>
+        </Style>
+
+        <Style x:Key="MemoryButton" TargetType="Button" BasedOn="{StaticResource CalcButton}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style x:Key="DisplayBox" TargetType="TextBox">
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="TextAlignment" Value="Right"/>
+            <Setter Property="Cursor" Value="Arrow"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="6">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> 
+            <RowDefinition Height="Auto"/>   
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>  
+        </Grid.RowDefinitions>
+
+        <TextBox x:Name="txtHistory" Grid.Row="0" Style="{StaticResource DisplayBox}"
+                 FontSize="15" Foreground="#FF616161" Height="26" Margin="6,8,6,0"/>
+
+        <Viewbox Grid.Row="1" Height="72" Margin="6,0,6,6"
+                 StretchDirection="DownOnly" HorizontalAlignment="Right">
+            <TextBox x:Name="txtCurrent" Style="{StaticResource DisplayBox}"
+                     FontSize="48" FontWeight="SemiBold" Text="0"/>
+        </Viewbox>
+
+        <UniformGrid Grid.Row="2" Columns="5" Height="34">
+            <Button x:Name="btnMC" Content="MC" Style="{StaticResource MemoryButton}" Click="MemoryClear_Click" IsEnabled="False" ToolTip="Очистити пам'ять"/>
+            <Button x:Name="btnMR" Content="MR" Style="{StaticResource MemoryButton}" Click="MemoryRecall_Click" IsEnabled="False" ToolTip="Відновити з пам'яті"/>
+            <Button x:Name="btnMPlus" Content="M+" Style="{StaticResource MemoryButton}" Click="MemoryAdd_Click" ToolTip="Додати до пам'яті"/>
+            <Button x:Name="btnMMinus" Content="M−" Style="{StaticResource MemoryButton}" Click="MemorySubtract_Click" ToolTip="Відняти від пам'яті"/>
+            <Button x:Name="btnMS" Content="MS" Style="{StaticResource MemoryButton}" Click="MemoryStore_Click" ToolTip="Зберегти в пам'ять"/>
+        </UniformGrid>
+
+        <UniformGrid Grid.Row="3" Rows="6" Columns="4">
+            <Button x:Name="btnPercent" Content="%"  Style="{StaticResource OpButton}" Click="Percent_Click"/>
+            <Button Content="CE" Style="{StaticResource OpButton}" Click="ClearEntry_Click" ToolTip="Очистити поточне число (Delete)"/>
+            <Button Content="C"  Style="{StaticResource OpButton}" Click="Clear_Click" ToolTip="Очистити все (Esc)"/>
+            <Button Content="⌫" Style="{StaticResource OpButton}" Click="Backspace_Click" ToolTip="Видалити останній символ (Backspace)"
+                    FontFamily="Segoe UI Symbol"/>
+
+            <Button x:Name="btnInv"  Content="¹/ₓ" Tag="inv"  Style="{StaticResource OpButton}" Click="Unary_Click"/>
+            <Button x:Name="btnSqr"  Content="x²"  Tag="sqr"  Style="{StaticResource OpButton}" Click="Unary_Click"/>
+            <Button x:Name="btnSqrt" Content="²√x" Tag="sqrt" Style="{StaticResource OpButton}" Click="Unary_Click"/>
+            <Button x:Name="btnDiv"  Content="÷"   Tag="/"    Style="{StaticResource OpButton}" Click="Operator_Click" FontSize="22"/>
+
+            <Button Content="7" Style="{StaticResource DigitButton}" Click="Digit_Click"/>
+            <Button Content="8" Style="{StaticResource DigitButton}" Click="Digit_Click"/>
+            <Button Content="9" Style="{StaticResource DigitButton}" Click="Digit_Click"/>
+            <Button x:Name="btnMul" Content="×" Tag="*" Style="{StaticResource OpButton}" Click="Operator_Click" FontSize="22"/>
+
+            <Button Content="4" Style="{StaticResource DigitButton}" Click="Digit_Click"/>
+            <Button Content="5" Style="{StaticResource DigitButton}" Click="Digit_Click"/>
+            <Button Content="6" Style="{StaticResource DigitButton}" Click="Digit_Click"/>
+            <Button x:Name="btnSub" Content="−" Tag="-" Style="{StaticResource OpButton}" Click="Operator_Click" FontSize="22"/>
+
+            <Button Content="1" Style="{StaticResource DigitButton}" Click="Digit_Click"/>
+            <Button Content="2" Style="{StaticResource DigitButton}" Click="Digit_Click"/>
+            <Button Content="3" Style="{StaticResource DigitButton}" Click="Digit_Click"/>
+            <Button x:Name="btnAdd" Content="+" Tag="+" Style="{StaticResource OpButton}" Click="Operator_Click" FontSize="22"/>
+
+            <Button x:Name="btnNegate" Content="+/−" Style="{StaticResource DigitButton}" Click="Negate_Click" ToolTip="Змінити знак (F9)"/>
+            <Button Content="0" Style="{StaticResource DigitButton}" Click="Digit_Click"/>
+            <Button x:Name="btnDot" Content="." Style="{StaticResource DigitButton}" Click="Dot_Click"/>
+            <Button Content="=" Style="{StaticResource EqualsButton}" Click="Equals_Click"/>
+        </UniformGrid>
+    </Grid>
+</Window>
